@@ -1,6 +1,6 @@
 const start = new Date().getTime()
 const Permutatron = require('./lib/Permutatron')
-const rpnToInfix = require('./lib/rpnToInfix')
+const rpnToInfix = require('./lib/rpn-to-infix')
 
 const target = parseInt(process.argv[2])
 const numbers = process.argv.slice(3).map(x => parseInt(x))
@@ -13,6 +13,7 @@ if (invalid) {
 const permutatron = new Permutatron(numbers, target)
 const found = permutatron.find()
 if (found) {
+  console.log(found)
   const infixString = rpnToInfix(found)
   console.log(infixString)
 } else {

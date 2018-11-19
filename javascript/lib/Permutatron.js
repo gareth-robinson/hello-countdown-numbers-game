@@ -1,4 +1,4 @@
-const evaluator = require('./rpnEvaluator')
+const evaluator = require('./countdown-RPN-evaluator')
 const Pattern = require('./Pattern')
 const OPERANDS = ['+', '*', '-', '/']
 

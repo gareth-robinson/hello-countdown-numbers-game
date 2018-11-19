@@ -22,21 +22,22 @@ function calculate(first, second, operand) {
 
 function evaluator(symbols) {
   const stack = []
-  symbols.forEach(s => {
+  const allAllowed = symbols.every(s => {
     if (typeof s === 'number') {
       stack.push(s)
-    } else {
-      const second = stack.pop()
-      const first = stack.pop()
-      const {result, allowed} = calculate(first, second, s)
-      if (allowed) {
-        stack.push(result)
-      } else {
-        return {allowed}
-      }
+      return true
     }
+
+    const second = stack.pop()
+    const first = stack.pop()
+    const {result, allowed} = calculate(first, second, s)
+    stack.push(result)
+    return allowed
   })
-  return {result: stack.pop(), allowed: true}
+  return {
+    allowed: allAllowed,
+    result: allAllowed ? stack.pop() : undefined
+  }
 }
 
 module.exports = evaluator
