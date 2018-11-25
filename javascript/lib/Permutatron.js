@@ -1,5 +1,4 @@
-const evaluator = require('./countdown-RPN-evaluator')
-const Pattern = require('./Pattern')
+const RollingPattern = require('./RollingPattern')
 const OPERANDS = ['+', '*', '-', '/']
 
 class Permutatron {
@@ -10,10 +9,12 @@ class Permutatron {
 
   extend(pattern, symbol, remaining) {
     const newPattern = pattern.extend(symbol)
-    if (newPattern.runningTotal === this.target) {
-      this.found = newPattern
-    } else if (newPattern.canContinue()) {
-      this.iterate(newPattern, remaining)
+    if (newPattern) {
+      if (newPattern.runningTotal === this.target) {
+        this.found = newPattern
+      } else {
+        this.iterate(newPattern, remaining)
+      }
     }
   }
 
@@ -31,7 +32,7 @@ class Permutatron {
   }
 
   find() {
-    this.iterate(new Pattern(evaluator), this.numbers)
+    this.iterate(new RollingPattern(), this.numbers)
     return this.found
   }
 }
