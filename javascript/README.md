@@ -1,13 +1,13 @@
 # Javascript Notes
 
-There is currently no optimsation for duplicates. Given a target of 5 and inputs of [2,2] the process would try
-2(first) 2(second) +
-2(first) 2(second) *
-2(first) 2(second) -
-2(first) 2(second) /
-2(second) 2(first) +
-2(second) 2(first) *
-2(second) 2(first) -
+There is currently no optimsation for duplicates. Given a target of 5 and inputs of [2,2] the process would try \
+2(first) 2(second) + \
+2(first) 2(second) * \
+2(first) 2(second) - \
+2(first) 2(second) / \
+2(second) 2(first) + \
+2(second) 2(first) * \
+2(second) 2(first) - \
 2(second) 2(first) /
 
 Also n * 1 and n / 1 are unnecessary evaluations
