@@ -25,8 +25,11 @@ class Permutatron {
     }
 
     for (let i=0; i<remaining.length && !this.found; i++) {
-      const remainingSubset = [].concat(remaining)
-      const extract = remainingSubset.splice(i, 1)[0]
+      const remainingSubset = new Array(remaining.length - 1)
+      for (let j=0; j<remainingSubset.length; j++){
+        remainingSubset[j] = remaining[j > i ? j - 1 : j]
+      }
+      const extract = remaining[i]
       this.extend(pattern, extract, remainingSubset)
     }
   }
