@@ -26,13 +26,13 @@ function evaluate(symbols, operand) {
   const first = rollingSymbols.pop()
   const {result, allowed} = calculate(first, second, operand)
   rollingSymbols.push(result)
-  return {allowed, rollingSymbols}
+  return {allowed, result, rollingSymbols}
 }
 
 class RollingPattern {
   constructor(symbols, rollingSymbols, result) {
-    this.symbols = symbols || []
-    this.rollingSymbols = rollingSymbols || []
+    this.symbols = symbols
+    this.rollingSymbols = rollingSymbols
     this.runningTotal = result
   }
 
@@ -49,12 +49,12 @@ class RollingPattern {
         symbol
       );
     }
-    const {allowed, rollingSymbols} = evaluate(this.rollingSymbols, symbol)
-    if (allowed) {
+    const {allowed, result, rollingSymbols} = evaluate(this.rollingSymbols, symbol)
+    if (allowed && result) {
       return new RollingPattern(
         extendedSymbols,
         rollingSymbols,
-        rollingSymbols[rollingSymbols.length - 1]
+        result
       );
     }
   }

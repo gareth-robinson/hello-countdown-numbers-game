@@ -35,7 +35,8 @@ class Permutatron {
   }
 
   find() {
-    this.iterate(new RollingPattern(), this.numbers)
+    const pattern = new RollingPattern([], [])
+    this.iterate(pattern, this.numbers)
     return this.found
   }
 }
