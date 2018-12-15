@@ -16,4 +16,4 @@ The process returns the first match it finds, not necessarily the simplest. Give
 
 The Permutatron uses the setting of a 'found' field as a means of exiting loops and recursion early; might change that to something more Functional, but that would also mean bubbling results all the way back up through recursion tree.
 
-Next optimisation will be to try and cut the number of pushes and pops
+Permutatron tries to do minimal memory allocations; only creating a new 'remaining' array as it recurses through the tree and overwriting the 'pattern' array. This is to improve performance.

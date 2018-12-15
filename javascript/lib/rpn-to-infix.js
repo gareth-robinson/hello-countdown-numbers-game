@@ -1,21 +1,31 @@
+function wrap(block, symbol) {
+  return block.infix && (['-','/'].includes(symbol) || block.symbol !== symbol)
+}
+
 function rpnToInfix(pattern) {
-  const {symbols} = pattern
   const stack = []
 
-  symbols.forEach((s, i) => {
+  pattern.forEach((s, i) => {
     if (typeof s === 'number') {
       stack.push(s)
     } else {
       const second = stack.pop()
       const first = stack.pop()
-      const block = `${first} ${s} ${second}`
-      const wrapped = i === symbols.length - 1
-        ? block
-        : `(${block})`
-      stack.push(wrapped)
+      const firstString = wrap(first, s)
+        ? `(${first.infix})`
+        : `${first.infix || first}`
+      const secondString = wrap(second, s)
+        ? `(${second.infix})`
+        : `${second.infix || second}`
+      const block = {
+        symbol: s,
+        infix: `${firstString} ${s} ${secondString}`
+      }
+
+      stack.push(block)
     }
   })
-  return stack.pop()
+  return stack.pop().infix
 }
 
 module.exports = rpnToInfix

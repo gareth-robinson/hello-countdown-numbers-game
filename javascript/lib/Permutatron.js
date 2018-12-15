@@ -1,4 +1,4 @@
-const RollingPattern = require('./RollingPattern')
+const evaluator = require('./countdown-RPN-evaluator')
 const OPERANDS = ['+', '*', '-', '/']
 
 class Permutatron {
@@ -7,36 +7,40 @@ class Permutatron {
     this.target = target
   }
 
-  extend(pattern, symbol, remaining) {
-    const newPattern = pattern.extend(symbol)
-    if (newPattern) {
-      if (newPattern.runningTotal === this.target) {
-        this.found = newPattern
-      } else {
-        this.iterate(newPattern, remaining)
-      }
+  evaluate(pattern, writePos) {
+    const {allowed, result} = evaluator(pattern, writePos)
+    if (result === this.target) {
+      this.found = pattern
     }
+    return allowed
   }
 
-  iterate(pattern, remaining) {
-    const canExtendWithOperand = pattern.canExtendWithOperand()
-    for (let i=0; (canExtendWithOperand && i<OPERANDS.length && !this.found); i++) {
-      this.extend(pattern, OPERANDS[i], remaining)
+  iterate(pattern, remaining, writePos, unresolvedNumbers) {
+    if (unresolvedNumbers > 1) {
+      for (let i=0; (i<OPERANDS.length && !this.found); i++) {
+        pattern[writePos] = OPERANDS[i]
+        const allowed = this.evaluate(pattern, writePos)
+        if (!this.found && allowed) {
+          this.iterate(pattern, remaining, writePos + 1, unresolvedNumbers - 1)
+        }
+      }
     }
 
     for (let i=0; i<remaining.length && !this.found; i++) {
       const remainingSubset = new Array(remaining.length - 1)
-      for (let j=0; j<remainingSubset.length; j++){
-        remainingSubset[j] = remaining[j > i ? j - 1 : j]
+      for (let j=0; j<remaining.length; j++) {
+        if (j === i) continue;
+        remainingSubset[j > i ? j - 1 : j] = remaining[j]
       }
       const extract = remaining[i]
-      this.extend(pattern, extract, remainingSubset)
+      pattern[ writePos ] = extract
+      this.iterate(pattern, remainingSubset, writePos + 1, unresolvedNumbers + 1)
     }
   }
 
   find() {
-    const pattern = new RollingPattern([], [])
-    this.iterate(pattern, this.numbers)
+    const pattern = new Array(2 * this.numbers.length - 1)
+    this.iterate(pattern, this.numbers, 0, 0)
     return this.found
   }
 }
