@@ -15,6 +15,15 @@ class Permutatron {
     return allowed
   }
 
+  removeEntryFromArray(array, skipIndex) {
+    const subset = new Array(array.length - 1)
+    for (let i=0; i<array.length; i++) {
+      if (i === skipIndex) continue;
+      subset[i > skipIndex ? i - 1 : i] = array[i]
+    }
+    return subset
+  }
+
   iterate(pattern, remaining, writePos, unresolvedNumbers) {
     if (unresolvedNumbers > 1) {
       for (let i=0; (i<OPERANDS.length && !this.found); i++) {
@@ -27,13 +36,8 @@ class Permutatron {
     }
 
     for (let i=0; i<remaining.length && !this.found; i++) {
-      const remainingSubset = new Array(remaining.length - 1)
-      for (let j=0; j<remaining.length; j++) {
-        if (j === i) continue;
-        remainingSubset[j > i ? j - 1 : j] = remaining[j]
-      }
-      const extract = remaining[i]
-      pattern[ writePos ] = extract
+      const remainingSubset = this.removeEntryFromArray(remaining, i)
+      pattern[writePos] = remaining[i]
       this.iterate(pattern, remainingSubset, writePos + 1, unresolvedNumbers + 1)
     }
   }
