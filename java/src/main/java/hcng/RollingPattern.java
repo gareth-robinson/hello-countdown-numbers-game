@@ -5,23 +5,33 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
 
+import hcng.CountdownEvaluator.Evaluation;
+import static hcng.CountdownEvaluator.evaluate;
+
 public class RollingPattern {
 	
 	private final List<String> pattern;
 	private final Stack<Integer> numbers;
+	private final int result;
 
 	public RollingPattern() {
 		pattern = new ArrayList<>();
 		numbers = new Stack<>();
+		result = 0;
 	}
 	
-	private RollingPattern(List<String> pattern, Stack<Integer> numbers) {
+	private RollingPattern(List<String> pattern, Stack<Integer> numbers, int result) {
 		this.pattern = pattern;
 		this.numbers = numbers;
+		this.result = result;
 	}
 	
 	public boolean canExtendWithOperator() {
-		return this.numbers.size() > 1;
+		return numbers.size() > 1;
+	}
+	
+	public int getResult() {
+		return result;
 	}
 	
 	private List<String> createExtendedPattern(String symbol) {
@@ -35,14 +45,16 @@ public class RollingPattern {
 		Stack<Integer> newNumbers = new Stack<>();
 		newNumbers.addAll(numbers);
 		newNumbers.add(number);
-		return Optional.of(new RollingPattern(newPattern, newNumbers));
+		return Optional.of(new RollingPattern(newPattern, newNumbers, number));
 	}
 	
 	public Optional<RollingPattern> extend(Operator operator) {
 		List<String> newPattern = createExtendedPattern(operator.getSymbol());
-		Optional<Stack<Integer>> newNumbers = evaluate(numbers, operator);
-		
-		return Optional.of(new RollingPattern(newPattern, newNumbers));
+		Evaluation evaluation = evaluate(numbers, operator);
+		if (!evaluation.isSafe()) {
+			return Optional.empty();
+		}
+		return Optional.of(new RollingPattern(newPattern, evaluation.getNumbers(), evaluation.getResult()));
 	}
 	
 }
