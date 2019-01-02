@@ -21,6 +21,7 @@ public class RollingPattern {
 	}
 	
 	private RollingPattern(List<String> pattern, Stack<Integer> numbers, int result) {
+		System.out.println(pattern); // TODO remove
 		this.pattern = pattern;
 		this.numbers = numbers;
 		this.result = result;
@@ -34,22 +35,31 @@ public class RollingPattern {
 		return result;
 	}
 	
-	private List<String> createExtendedPattern(String symbol) {
+	public List<String> getPattern() {
+		return pattern;
+	}
+	
+	private List<String> addSymbolToPattern(String symbol) {
 		List<String> extendedPattern = new ArrayList<>(pattern);
 		extendedPattern.add(symbol);
 		return extendedPattern;
 	}
 	
-	public Optional<RollingPattern> extend(Integer number) {
-		List<String> newPattern = createExtendedPattern(number.toString());
+	private Stack<Integer> addNumberToStack(Integer number) {
 		Stack<Integer> newNumbers = new Stack<>();
 		newNumbers.addAll(numbers);
 		newNumbers.add(number);
+		return newNumbers;
+	}
+	
+	public Optional<RollingPattern> extend(Integer number) {
+		List<String> newPattern = addSymbolToPattern(number.toString());
+		Stack<Integer> newNumbers = addNumberToStack(number);
 		return Optional.of(new RollingPattern(newPattern, newNumbers, number));
 	}
 	
 	public Optional<RollingPattern> extend(Operator operator) {
-		List<String> newPattern = createExtendedPattern(operator.getSymbol());
+		List<String> newPattern = addSymbolToPattern(operator.getSymbol());
 		Evaluation evaluation = evaluate(numbers, operator);
 		if (!evaluation.isSafe()) {
 			return Optional.empty();
