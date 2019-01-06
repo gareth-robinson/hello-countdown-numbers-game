@@ -1,0 +1,20 @@
+plugins {
+    id 'java-library'
+    id 'jacoco'
+}
+
+repositories {
+    jcenter() 
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.12' 
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/coverage")
+    }
+}

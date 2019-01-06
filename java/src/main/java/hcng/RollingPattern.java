@@ -21,7 +21,6 @@ public class RollingPattern {
 	}
 	
 	private RollingPattern(List<String> pattern, Stack<Integer> numbers, int result) {
-		System.out.println(pattern); // TODO remove
 		this.pattern = pattern;
 		this.numbers = numbers;
 		this.result = result;

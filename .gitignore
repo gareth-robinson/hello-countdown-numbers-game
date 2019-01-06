@@ -2,3 +2,7 @@
 javascript/.DS_Store
 javascript/coverage
 javascript/node_modules
+java/.classpath
+java/.gitignore
+java/.project
+java/.settings
