@@ -2,17 +2,23 @@ package hcng;
 
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import java.util.Optional;
+import java.util.Stack;
 
-public class RollingPatternTest {
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+import static hcng.test.Setup.createStack;
 
-	private RollingPattern testPattern;
+public class PatternTest {
+
+	private Pattern testPattern;
+	private Evaluator evaluator = mock(Evaluator.class);
 	
 	@Before
 	public void createNewPattern() {
-		testPattern = new RollingPattern();
+		reset(evaluator); 
+		testPattern = new Pattern(evaluator);
 	}
 	
 	@Test
@@ -23,8 +29,8 @@ public class RollingPatternTest {
 	
 	@Test
 	public void testExtendingWithIntegerAddsToPattern() {
-		Optional<RollingPattern> result = testPattern.extend(1);
-		RollingPattern newPattern = result.get(); 
+		Optional<Pattern> result = testPattern.extend(1);
+		Pattern newPattern = result.get(); 
 		
 		assertEquals(newPattern.getPattern().size(), 1);
 		assertEquals(newPattern.getPattern().get(0), "1");
@@ -32,26 +38,26 @@ public class RollingPatternTest {
 
 	@Test
 	public void testExtendingWithIntegerSetsResultToThatInteger() {
-		Optional<RollingPattern> result = testPattern.extend(1);
-		RollingPattern newPattern = result.get(); 
+		Optional<Pattern> result = testPattern.extend(1);
+		Pattern newPattern = result.get(); 
 		
 		assertEquals(newPattern.getResult(), 1);
 	}
 	
 	@Test
 	public void testASingleIntegerCannotBeExtendedWithAnOperator() {
-		Optional<RollingPattern> result = testPattern.extend(1);
-		RollingPattern newPattern = result.get(); 
+		Optional<Pattern> result = testPattern.extend(1);
+		Pattern newPattern = result.get(); 
 		
 		assertFalse(newPattern.canExtendWithOperator());
 	}
 	
 	@Test
 	public void testExtendingWithTwoIntegersAddsToPattern() {
-		Optional<RollingPattern> result1 = testPattern.extend(1);
-		RollingPattern newPattern1 = result1.get(); 
-		Optional<RollingPattern> result2 = newPattern1.extend(2);
-		RollingPattern newPattern2 = result2.get();
+		Optional<Pattern> result1 = testPattern.extend(1);
+		Pattern newPattern1 = result1.get(); 
+		Optional<Pattern> result2 = newPattern1.extend(2);
+		Pattern newPattern2 = result2.get();
 		
 		assertEquals(newPattern2.getPattern().size(), 2);
 		assertEquals(newPattern2.getPattern().get(0), "1");
@@ -60,74 +66,64 @@ public class RollingPatternTest {
 	
 	@Test
 	public void testTwoIntegersCanBeExtendedWithAnOperator() {
-		Optional<RollingPattern> result1 = testPattern.extend(1);
-		RollingPattern newPattern1 = result1.get(); 
-		Optional<RollingPattern> result2 = newPattern1.extend(2);
-		RollingPattern newPattern2 = result2.get();
+		Optional<Pattern> result1 = testPattern.extend(1);
+		Pattern newPattern1 = result1.get(); 
+		Optional<Pattern> result2 = newPattern1.extend(2);
+		Pattern newPattern2 = result2.get();
 		
 		assertTrue(newPattern2.canExtendWithOperator());
 	}
 	
 	@Test
-	public void testExtendingTwoIntegersWithOperatorCannotBeExtended() {
-		Optional<RollingPattern> result1 = testPattern.extend(1);
-		RollingPattern newPattern1 = result1.get();
-		Optional<RollingPattern> result2 = newPattern1.extend(2);
-		RollingPattern newPattern2 = result2.get();
-		Optional<RollingPattern> result3 = newPattern2.extend(Operator.ADD);
-		RollingPattern newPattern3 = result3.get();
-		
-		assertFalse(newPattern3.canExtendWithOperator());	
-	}
-	
-	@Test
 	public void testExtendingTwoIntegersWithOperatorEvaluatesPattern() {
-		Optional<RollingPattern> result1 = testPattern.extend(1);
-		RollingPattern newPattern1 = result1.get();
-		Optional<RollingPattern> result2 = newPattern1.extend(2);
-		RollingPattern newPattern2 = result2.get();
-		Optional<RollingPattern> result3 = newPattern2.extend(Operator.ADD);
-		RollingPattern newPattern3 = result3.get();
+		Stack<Integer> expectedStack = createStack(1, 2);
+		Stack<Integer> resultStack = createStack(3);
+		when(evaluator.isOperationAllowed(eq(expectedStack), eq(Operator.ADD)))
+			.thenReturn(true);
+		when(evaluator.evaluate(eq(expectedStack), eq(Operator.ADD)))
+			.thenReturn(resultStack);
+		
+		Optional<Pattern> result1 = testPattern.extend(1);
+		Pattern newPattern1 = result1.get();
+		Optional<Pattern> result2 = newPattern1.extend(2);
+		Pattern newPattern2 = result2.get();
+		Optional<Pattern> result3 = newPattern2.extend(Operator.ADD);
+		Pattern newPattern3 = result3.get();
 		
 		assertEquals(newPattern3.getResult(), 3);	
 	}
 	
 	@Test
-	public void testExtendingNumbersWithOperatorIsOnlyAllowableIfMoreThanTwoIntegersRemain() {
-		Optional<RollingPattern> result1 = testPattern.extend(1);
-		RollingPattern newPattern1 = result1.get(); 
-		assertFalse(newPattern1.canExtendWithOperator());
+	public void testExtensionAfterEvaluationReducesTheStack() {
+		Stack<Integer> expectedStack = createStack(1, 2);
+		Stack<Integer> resultStack = createStack(3);
+		when(evaluator.isOperationAllowed(eq(expectedStack), eq(Operator.ADD)))
+			.thenReturn(true);
+		when(evaluator.evaluate(eq(expectedStack), eq(Operator.ADD)))
+			.thenReturn(resultStack);
 		
-		Optional<RollingPattern> result2 = newPattern1.extend(2);
-		RollingPattern newPattern2 = result2.get();
-		assertTrue(newPattern2.canExtendWithOperator());
-		
-		Optional<RollingPattern> result3 = newPattern2.extend(3);
-		RollingPattern newPattern3 = result3.get();
-		assertTrue(newPattern3.canExtendWithOperator());
-		
-		Optional<RollingPattern> result4 = newPattern3.extend(Operator.ADD);
-		RollingPattern newPattern4 = result4.get();
-		assertTrue(newPattern4.canExtendWithOperator());
-		
-		Optional<RollingPattern> result5 = newPattern4.extend(Operator.ADD);
-		RollingPattern newPattern5 = result5.get();
-		assertFalse(newPattern5.canExtendWithOperator());
-		
-		assertEquals(newPattern5.getResult(), 6);
+		Optional<Pattern> result1 = testPattern.extend(1);
+		Pattern newPattern1 = result1.get();
+		Optional<Pattern> result2 = newPattern1.extend(2);
+		Pattern newPattern2 = result2.get();
+		Optional<Pattern> result3 = newPattern2.extend(Operator.ADD);
+		Pattern newPattern3 = result3.get();
+			
+		assertFalse(newPattern3.canExtendWithOperator());	
 	}
 	
 	@Test
 	public void testUnsafeResultsReturnEmptyOptional() {
-		Optional<RollingPattern> result1 = testPattern.extend(1);
-		RollingPattern newPattern1 = result1.get(); 
-		assertFalse(newPattern1.canExtendWithOperator());
+		Stack<Integer> expectedStack = createStack(1, 2);
+		when(evaluator.isOperationAllowed(eq(expectedStack), eq(Operator.ADD)))
+			.thenReturn(false);
 		
-		Optional<RollingPattern> result2 = newPattern1.extend(2);
-		RollingPattern newPattern2 = result2.get();
-		assertTrue(newPattern2.canExtendWithOperator());
+		Optional<Pattern> result1 = testPattern.extend(1);
+		Pattern newPattern1 = result1.get(); 
+		Optional<Pattern> result2 = newPattern1.extend(2);
+		Pattern newPattern2 = result2.get();
+		Optional<Pattern> result3 = newPattern2.extend(Operator.SUBTRACT);
 		
-		Optional<RollingPattern> result3 = newPattern2.extend(Operator.SUBTRACT);
 		assertFalse(result3.isPresent());
 	}
 	

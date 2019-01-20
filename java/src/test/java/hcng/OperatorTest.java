@@ -24,14 +24,5 @@ public class OperatorTest {
 	public void testSymbolForDivide() {
 		assertEquals(Operator.DIVIDE.getSymbol(), "/");
 	}
-	
-	@Test
-	public void allOperatorsContainsFourEntries() {
-		assertEquals(Operator.ALL_OPERATORS.size(), 4);
-		Operator.ALL_OPERATORS.contains(Operator.ADD);
-		Operator.ALL_OPERATORS.contains(Operator.SUBTRACT);
-		Operator.ALL_OPERATORS.contains(Operator.MULTIPLY);
-		Operator.ALL_OPERATORS.contains(Operator.DIVIDE);
-	}
 
 }

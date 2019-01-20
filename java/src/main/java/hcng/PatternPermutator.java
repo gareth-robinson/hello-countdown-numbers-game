@@ -4,62 +4,77 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Permutatron {
+public class PatternPermutator {
 
-	private final List<Integer> remaining;
-	private final int target;
+	private final Evaluator evaluator;
+	private final List<Operator> operators;
 
-	public Permutatron(List<Integer> numbers, int target) {
-		this.remaining = numbers;
-		this.target = target;
+	public PatternPermutator(Evaluator evaluator) {
+		this.evaluator = evaluator;
+		operators = evaluator.getAllowableOperators();
 	}
 	
-	public void find() {
-		Optional<RollingPattern> found = extend(new RollingPattern(), remaining);
+	public Optional<List<String>> find(List<Integer> numbers, int target) {
+		Permutator permutator = new Permutator(numbers, target);
+		Optional<Pattern> found = permutator.find();
 		if (found.isPresent()) {
-			System.out.println(found.get().getPattern());	
-		} else {
-			System.out.println("Nope");
-		}
-	}
-	
-	private Optional<RollingPattern> extend(RollingPattern pattern, List<Integer> remaining) {
-		Optional<RollingPattern> found = extendWithNumbers(pattern, remaining);
-		if (!found.isPresent() && pattern.canExtendWithOperator()) {
-			found = extendWithOperators(pattern, remaining);
-		}
-		return found;
-	}
-
-	private Optional<RollingPattern> extendWithNumbers(RollingPattern pattern, List<Integer> remaining) {
-		for (int index=0; index<remaining.size(); index++) {
-			Optional<RollingPattern> newPattern = pattern.extend(remaining.get(index));
-			if (newPattern.isPresent()) {
-				if (newPattern.get().getResult() == target) {
-					return newPattern;
-				} else {
-					List<Integer> remainingWithout = new ArrayList<>(remaining);
-					remainingWithout.remove(index);
-					Optional<RollingPattern> found = extend(newPattern.get(), remainingWithout);
-					if (found.isPresent()) {return found;}
-				}
-			}
+			return Optional.of(found.get().getPattern());	
 		}
 		return Optional.empty();
 	}
 	
-	private Optional<RollingPattern> extendWithOperators(RollingPattern pattern, List<Integer> remaining) {
-		for (int index=0; index<Operator.ALL_OPERATORS.size(); index++) {
-			Optional<RollingPattern> newPattern = pattern.extend(Operator.ALL_OPERATORS.get(index));
-			if (newPattern.isPresent()) {
-				if (newPattern.get().getResult() == target) {
-					return newPattern;
-				} else {
-					Optional<RollingPattern> found = extend(newPattern.get(), remaining);
-					if (found.isPresent()) {return found;}
+	private class Permutator {
+		
+		private final List<Integer> remaining;
+		private final int target;
+		
+		public Permutator(List<Integer> numbers, int target) {
+			this.remaining = numbers;
+			this.target = target;
+		}
+		
+		public Optional<Pattern> find() {
+			return extend(new Pattern(evaluator), remaining);
+		}
+		
+		private Optional<Pattern> extend(Pattern pattern, List<Integer> remaining) {
+			Optional<Pattern> found = extendWithNumbers(pattern, remaining);
+			if (!found.isPresent() && pattern.canExtendWithOperator()) {
+				found = extendWithOperators(pattern, remaining);
+			}
+			return found;
+		}
+	
+		private Optional<Pattern> extendWithNumbers(Pattern pattern, List<Integer> remaining) {
+			for (int index=0; index<remaining.size(); index++) {
+				Optional<Pattern> newPattern = pattern.extend(remaining.get(index));
+				if (newPattern.isPresent()) {
+					if (newPattern.get().getResult() == target) {
+						return newPattern;
+					} else {
+						List<Integer> remainingWithout = new ArrayList<>(remaining);
+						remainingWithout.remove(index);
+						Optional<Pattern> found = extend(newPattern.get(), remainingWithout);
+						if (found.isPresent()) {return found;}
+					}
 				}
 			}
+			return Optional.empty();
 		}
-		return Optional.empty();
+		
+		private Optional<Pattern> extendWithOperators(Pattern pattern, List<Integer> remaining) {
+			for (int index=0; index<operators.size(); index++) {
+				Optional<Pattern> newPattern = pattern.extend(operators.get(index));
+				if (newPattern.isPresent()) {
+					if (newPattern.get().getResult() == target) {
+						return newPattern;
+					} else {
+						Optional<Pattern> found = extend(newPattern.get(), remaining);
+						if (found.isPresent()) {return found;}
+					}
+				}
+			}
+			return Optional.empty();
+		}
 	}
 }

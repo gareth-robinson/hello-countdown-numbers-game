@@ -1,26 +1,25 @@
 package hcng;
 
+import hcng.Evaluator;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
 
-import hcng.CountdownEvaluator.Evaluation;
-import static hcng.CountdownEvaluator.evaluate;
-
-public class RollingPattern {
+public class Pattern {
 	
 	private final List<String> pattern;
 	private final Stack<Integer> numbers;
 	private final int result;
+	private final Evaluator evaluator;
 
-	public RollingPattern() {
-		pattern = new ArrayList<>();
-		numbers = new Stack<>();
-		result = 0;
+	public Pattern(Evaluator evaluator) {
+		this(evaluator, new ArrayList<>(), new Stack<>(), 0);
 	}
 	
-	private RollingPattern(List<String> pattern, Stack<Integer> numbers, int result) {
+	private Pattern(Evaluator evaluator, List<String> pattern, Stack<Integer> numbers, int result) {
+		this.evaluator = evaluator;
 		this.pattern = pattern;
 		this.numbers = numbers;
 		this.result = result;
@@ -51,19 +50,19 @@ public class RollingPattern {
 		return newNumbers;
 	}
 	
-	public Optional<RollingPattern> extend(Integer number) {
+	public Optional<Pattern> extend(Integer number) {
 		List<String> newPattern = addSymbolToPattern(number.toString());
 		Stack<Integer> newNumbers = addNumberToStack(number);
-		return Optional.of(new RollingPattern(newPattern, newNumbers, number));
+		return Optional.of(new Pattern(evaluator, newPattern, newNumbers, number));
 	}
 	
-	public Optional<RollingPattern> extend(Operator operator) {
-		List<String> newPattern = addSymbolToPattern(operator.getSymbol());
-		Evaluation evaluation = evaluate(numbers, operator);
-		if (!evaluation.isSafe()) {
+	public Optional<Pattern> extend(Operator operator) {
+		if (!evaluator.isOperationAllowed(numbers, operator)) {
 			return Optional.empty();
 		}
-		return Optional.of(new RollingPattern(newPattern, evaluation.getNumbers(), evaluation.getResult()));
+		List<String> newPattern = addSymbolToPattern(operator.getSymbol());
+		Stack<Integer> newNumbers = evaluator.evaluate(numbers, operator);
+		return Optional.of(new Pattern(evaluator, newPattern, newNumbers, newNumbers.peek()));
 	}
 	
 }
