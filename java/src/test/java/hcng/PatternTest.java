@@ -3,6 +3,8 @@ package hcng;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
 
@@ -23,41 +25,36 @@ public class PatternTest {
 	
 	@Test
 	public void testRollingPatternIsEmpty() {
-		assertEquals(testPattern.getResult(), 0);
-		assertEquals(testPattern.getPattern().size(), 0);
+		assertEquals(0, testPattern.getResult());
+		assertEquals(0, testPattern.getPattern().size());
 	}
 	
 	@Test
 	public void testExtendingWithIntegerAddsToPattern() {
-		Optional<Pattern> result = testPattern.extend(1);
-		Pattern newPattern = result.get(); 
+		Pattern newPattern = testPattern.extend(1);
 		
-		assertEquals(newPattern.getPattern().size(), 1);
-		assertEquals(newPattern.getPattern().get(0), "1");
+		assertEquals(1, newPattern.getPattern().size());
+		assertEquals("1", newPattern.getPattern().get(0));
 	}
 
 	@Test
 	public void testExtendingWithIntegerSetsResultToThatInteger() {
-		Optional<Pattern> result = testPattern.extend(1);
-		Pattern newPattern = result.get(); 
+		Pattern newPattern = testPattern.extend(1); 
 		
-		assertEquals(newPattern.getResult(), 1);
+		assertEquals(1, newPattern.getResult());
 	}
 	
 	@Test
 	public void testASingleIntegerCannotBeExtendedWithAnOperator() {
-		Optional<Pattern> result = testPattern.extend(1);
-		Pattern newPattern = result.get(); 
+		Pattern newPattern = testPattern.extend(1); 
 		
 		assertFalse(newPattern.canExtendWithOperator());
 	}
 	
 	@Test
 	public void testExtendingWithTwoIntegersAddsToPattern() {
-		Optional<Pattern> result1 = testPattern.extend(1);
-		Pattern newPattern1 = result1.get(); 
-		Optional<Pattern> result2 = newPattern1.extend(2);
-		Pattern newPattern2 = result2.get();
+		Pattern newPattern1 = testPattern.extend(1); 
+		Pattern newPattern2 = newPattern1.extend(2);
 		
 		assertEquals(newPattern2.getPattern().size(), 2);
 		assertEquals(newPattern2.getPattern().get(0), "1");
@@ -66,10 +63,8 @@ public class PatternTest {
 	
 	@Test
 	public void testTwoIntegersCanBeExtendedWithAnOperator() {
-		Optional<Pattern> result1 = testPattern.extend(1);
-		Pattern newPattern1 = result1.get(); 
-		Optional<Pattern> result2 = newPattern1.extend(2);
-		Pattern newPattern2 = result2.get();
+		Pattern newPattern1 = testPattern.extend(1);
+		Pattern newPattern2 = newPattern1.extend(2);
 		
 		assertTrue(newPattern2.canExtendWithOperator());
 	}
@@ -83,14 +78,12 @@ public class PatternTest {
 		when(evaluator.evaluate(eq(expectedStack), eq(Operator.ADD)))
 			.thenReturn(resultStack);
 		
-		Optional<Pattern> result1 = testPattern.extend(1);
-		Pattern newPattern1 = result1.get();
-		Optional<Pattern> result2 = newPattern1.extend(2);
-		Pattern newPattern2 = result2.get();
+		Pattern newPattern1 = testPattern.extend(1);
+		Pattern newPattern2 = newPattern1.extend(2);
 		Optional<Pattern> result3 = newPattern2.extend(Operator.ADD);
 		Pattern newPattern3 = result3.get();
 		
-		assertEquals(newPattern3.getResult(), 3);	
+		assertEquals(3, newPattern3.getResult());	
 	}
 	
 	@Test
@@ -102,10 +95,8 @@ public class PatternTest {
 		when(evaluator.evaluate(eq(expectedStack), eq(Operator.ADD)))
 			.thenReturn(resultStack);
 		
-		Optional<Pattern> result1 = testPattern.extend(1);
-		Pattern newPattern1 = result1.get();
-		Optional<Pattern> result2 = newPattern1.extend(2);
-		Pattern newPattern2 = result2.get();
+		Pattern newPattern1 = testPattern.extend(1);
+		Pattern newPattern2 = newPattern1.extend(2);
 		Optional<Pattern> result3 = newPattern2.extend(Operator.ADD);
 		Pattern newPattern3 = result3.get();
 			
@@ -118,13 +109,67 @@ public class PatternTest {
 		when(evaluator.isOperationAllowed(eq(expectedStack), eq(Operator.ADD)))
 			.thenReturn(false);
 		
-		Optional<Pattern> result1 = testPattern.extend(1);
-		Pattern newPattern1 = result1.get(); 
-		Optional<Pattern> result2 = newPattern1.extend(2);
-		Pattern newPattern2 = result2.get();
+		Pattern newPattern1 = testPattern.extend(1); 
+		Pattern newPattern2 = newPattern1.extend(2);
 		Optional<Pattern> result3 = newPattern2.extend(Operator.SUBTRACT);
 		
 		assertFalse(result3.isPresent());
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testPatternEndingWithANumberReturnsJustThatNumber() {
+		when(evaluator.isOperationAllowed(any(Stack.class), any(Operator.class)))
+			.thenReturn(true);
+		when(evaluator.evaluate(any(Stack.class), any(Operator.class)))
+			.thenReturn(createStack(1, 2, 3));
+		
+		Pattern newPattern = testPattern.extend(1).extend(2).extend(3);
+		List<String> evaluatedPattern = newPattern.getEvaluatedPattern();
+		assertEquals(Arrays.asList("3"), evaluatedPattern);
+		
+		Pattern newPattern2 = newPattern.extend(Operator.ADD).get().extend(4);
+		evaluatedPattern = newPattern2.getEvaluatedPattern();
+		assertEquals(Arrays.asList("4"), evaluatedPattern);
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testSingleOperatorReturnsTwoNumbers() {
+		when(evaluator.getAllowableOperators())
+			.thenReturn(Arrays.asList(Operator.ADD));
+		when(evaluator.isOperationAllowed(any(Stack.class), any(Operator.class)))
+			.thenReturn(true);
+		when(evaluator.evaluate(any(Stack.class), any(Operator.class)))
+			.thenReturn(createStack(1, 2, 3));
+		
+		Pattern newPattern = testPattern.extend(1).extend(2).extend(3).extend(Operator.ADD).get();
+		List<String> evaluatedPattern = newPattern.getEvaluatedPattern();
+		assertEquals(Arrays.asList("2", "3", "+"), evaluatedPattern);
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testPatternReturnsNumbersForCountOfOperators() {
+		when(evaluator.getAllowableOperators())
+			.thenReturn(Arrays.asList(Operator.ADD));
+		when(evaluator.isOperationAllowed(any(Stack.class), any(Operator.class)))
+			.thenReturn(true);
+		when(evaluator.evaluate(any(Stack.class), any(Operator.class)))
+			.thenReturn(createStack(1, 2, 3));
+		
+		Pattern newPattern = testPattern
+			.extend(1)
+			.extend(2)
+			.extend(3)
+			.extend(4)
+			.extend(Operator.ADD).get()
+			.extend(5)
+			.extend(6)
+			.extend(Operator.ADD).get()
+			.extend(Operator.ADD).get();
+		List<String> evaluatedPattern = newPattern.getEvaluatedPattern();
+		assertEquals(Arrays.asList("3", "4", "+", "5", "6", "+", "+"), evaluatedPattern);
 	}
 	
 }

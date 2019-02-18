@@ -47,16 +47,14 @@ public class PatternPermutator {
 	
 		private Optional<Pattern> extendWithNumbers(Pattern pattern, List<Integer> remaining) {
 			for (int index=0; index<remaining.size(); index++) {
-				Optional<Pattern> newPattern = pattern.extend(remaining.get(index));
-				if (newPattern.isPresent()) {
-					if (newPattern.get().getResult() == target) {
-						return newPattern;
-					} else {
-						List<Integer> remainingWithout = new ArrayList<>(remaining);
-						remainingWithout.remove(index);
-						Optional<Pattern> found = extend(newPattern.get(), remainingWithout);
-						if (found.isPresent()) {return found;}
-					}
+				Pattern newPattern = pattern.extend(remaining.get(index));
+				if (newPattern.getResult() == target) {
+					return Optional.of(newPattern);
+				} else {
+					List<Integer> remainingWithout = new ArrayList<>(remaining);
+					remainingWithout.remove(index);
+					Optional<Pattern> found = extend(newPattern, remainingWithout);
+					if (found.isPresent()) {return found;}
 				}
 			}
 			return Optional.empty();

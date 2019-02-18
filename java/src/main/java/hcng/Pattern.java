@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 public class Pattern {
 	
@@ -37,6 +38,17 @@ public class Pattern {
 		return pattern;
 	}
 	
+	public List<String> getEvaluatedPattern() {
+		List<String> operatorStrings = evaluator.getAllowableOperators()
+			.stream()
+			.map(o -> o.getSymbol())
+			.collect(Collectors.toList());
+	
+		long operatorCount = pattern.stream().filter(p -> operatorStrings.contains(p)).count();
+		int expectedSymbols = 1 + (2 * (int)operatorCount);
+		return pattern.subList(pattern.size() - expectedSymbols, pattern.size());
+	}
+	
 	private List<String> addSymbolToPattern(String symbol) {
 		List<String> extendedPattern = new ArrayList<>(pattern);
 		extendedPattern.add(symbol);
@@ -50,10 +62,10 @@ public class Pattern {
 		return newNumbers;
 	}
 	
-	public Optional<Pattern> extend(Integer number) {
+	public Pattern extend(Integer number) {
 		List<String> newPattern = addSymbolToPattern(number.toString());
 		Stack<Integer> newNumbers = addNumberToStack(number);
-		return Optional.of(new Pattern(evaluator, newPattern, newNumbers, number));
+		return new Pattern(evaluator, newPattern, newNumbers, number);
 	}
 	
 	public Optional<Pattern> extend(Operator operator) {
